@@ -1,0 +1,148 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_tags/tag.dart';
+
+void main() async {
+  runApp(MemoPage());
+}
+class MemoPage extends StatefulWidget {
+
+  MemoPage():super();
+
+  @override
+  _MemoPageState createState() => _MemoPageState();
+}
+
+
+class _MemoPageState extends State<MemoPage> {
+  TextEditingController _textEditingController;
+  Memo _memo;
+
+  List<String> _suggestionList = [ "aaaa", "bbb", ];
+
+  @override
+  void initState(){
+    super.initState();
+
+    _memo = Memo(description: "test");
+    _textEditingController = new TextEditingController(text: _memo.description);
+  }
+
+  @override
+  void dispose(){
+    super.dispose();
+
+    _textEditingController.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context){
+
+    return MaterialApp(
+      title: "test",
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text( "title", style: TextStyle(fontWeight: FontWeight.bold ), ),
+        ),
+
+        body: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: _createbody(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _createbody(){
+    var result = List<Widget>();
+    
+    Widget _descriptionWidget = Center(
+      child: Padding(
+        padding: EdgeInsets.only(top: 10.0),
+        child: TextField(
+          key: Key("description"),
+          controller: _textEditingController,
+          keyboardType: TextInputType.multiline,
+          maxLines: null,
+          decoration: InputDecoration( labelText: "input idea", ),
+          onChanged: (textData){ setState(() { _memo.description = textData; }); },
+        ),
+      ),
+    );
+
+    Widget _tagWidget = _createTagWidget();
+
+    result.add(_descriptionWidget);
+    result.add(_tagWidget);
+    
+    return result;
+  }
+
+  Widget _createTagWidget(){
+    ItemTagsCombine combine = ItemTagsCombine.onlyText;
+    var _fontSize = 14.0;
+
+    var _tagWidget = Tags(
+      symmetry: false,
+      columns: 0,
+      verticalDirection: VerticalDirection.up,
+      textDirection: TextDirection.rtl,
+      heightHorizontalScroll: 60 * (_fontSize / 14),
+      textField: TagsTextFiled(
+        hintText: "tagDecoration",
+        helperText: "noTag",
+        textStyle: TextStyle(fontSize: _fontSize),
+        suggestions: _suggestionList,
+        onSubmitted: (String str) {
+          print(" ");
+          print("is submited");
+          setState(() {
+            _memo.tagList.add( str );
+          });
+        },
+      ),
+      itemCount: _memo.tagList.length,
+      itemBuilder: (index) {
+        final item = _memo.tagList[index];
+
+        return ItemTags(
+          key: Key(index.toString()),
+          index: index,
+          title: item,
+          pressEnabled: false,
+          activeColor: Colors.green[400],
+          combine: combine,
+          removeButton: ItemTagsRemoveButton( backgroundColor: Colors.green[900], ),
+          textStyle: TextStyle( fontSize: _fontSize, ),
+          onRemoved: () {
+            setState(() {
+              _memo.tagList.removeAt(index);
+            });
+          },
+        );
+
+      },
+    );
+
+    
+    return Padding(
+      padding: EdgeInsets.all(10.0),
+      child: _tagWidget
+    );
+  }
+
+}
+
+
+class Memo{
+  String description;
+  List<String> tagList;
+
+  Memo( {this.description="", this.tagList}){
+    if(tagList == null) { this.tagList = List<String>(); }
+  }
+}
